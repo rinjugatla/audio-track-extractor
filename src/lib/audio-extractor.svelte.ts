@@ -146,7 +146,7 @@ export class AudioExtractor {
 				const originalTrack = this.tracks.find((t) => t.streamIndex === track.streamIndex);
 				return {
 					name: track.filename,
-					number: track.streamIndex + 1,
+					number: track.streamIndex,
 					url: URL.createObjectURL(blob),
 					label: originalTrack ? `Track ${originalTrack.index + 1}` : `Track ${track.filename}`
 				};
