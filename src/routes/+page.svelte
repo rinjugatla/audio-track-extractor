@@ -7,7 +7,7 @@
 	let message = $state('Loading FFmpeg...');
 	let logs = $state<string[]>([]);
 	let selectedFile = $state<File | null>(null);
-	let audioUrl = $state<string | null>(null);
+	let extractedTracks = $state<{ name: string, url: string }[]>([]);
 	let outputFormat = $state<'mp3' | 'aac' | 'wav'>('mp3');
 	let error = $state<string | null>(null);
 
@@ -28,9 +28,15 @@
 		const target = event.target as HTMLInputElement;
 		if (target.files && target.files.length > 0) {
 			selectedFile = target.files[0];
-			audioUrl = null; // Reset previous result
+			// Clear previous results
+			cleanupUrls();
+			extractedTracks = [];
 			error = null;
 		}
+	}
+
+	function cleanupUrls() {
+		extractedTracks.forEach(track => URL.revokeObjectURL(track.url));
 	}
 
 	async function extractAudio() {
@@ -38,19 +44,29 @@
 
 		isProcessing = true;
 		error = null;
+		cleanupUrls();
+		extractedTracks = [];
 		
 		try {
-			const data = await ffmpegService.extractAudio(selectedFile, outputFormat);
-			const blob = new Blob([data as unknown as BlobPart], { type: `audio/${outputFormat}` });
-			audioUrl = URL.createObjectURL(blob);
-			message = 'Extraction complete!';
-		} catch (e) {
-			error = 'An error occurred during extraction. Check logs for details.';
+			const results = await ffmpegService.extractAudio(selectedFile, outputFormat);
+			
+			extractedTracks = results.map(track => {
+				const blob = new Blob([track.data as unknown as BlobPart], { type: `audio/${outputFormat}` });
+				return {
+					name: track.filename,
+					url: URL.createObjectURL(blob)
+				};
+			});
+			
+			message = `Extraction complete! Extracted ${extractedTracks.length} tracks.`;
+		} catch (e: any) {
+			error = e.message || 'An error occurred during extraction. Check logs for details.';
 			console.error(e);
 		} finally {
 			isProcessing = false;
 		}
 	}
+
 	
 	function formatSize(bytes: number) {
 		if (bytes === 0) return '0 Bytes';
@@ -141,18 +157,26 @@
 					</div>
 				{/if}
 
-				{#if audioUrl}
+				{#if extractedTracks.length > 0}
 					<div class="divider"></div>
 					<div class="w-full flex flex-col items-center gap-4">
-						<h3 class="text-xl font-bold text-success">Extraction Successful!</h3>
-						<audio controls src={audioUrl} class="w-full"></audio>
-						<a 
-							href={audioUrl} 
-							download={`extracted-audio.${outputFormat}`} 
-							class="btn btn-secondary btn-outline"
-						>
-							Download Audio
-						</a>
+						<h3 class="text-xl font-bold text-success">Extraction Successful! ({extractedTracks.length} tracks)</h3>
+						
+						{#each extractedTracks as track, i}
+							<div class="card bg-base-200 w-full p-4 shadow-sm">
+								<h4 class="font-bold text-left mb-2">Track {i + 1}</h4>
+								<audio controls src={track.url} class="w-full mb-2"></audio>
+								<div class="flex justify-end">
+									<a 
+										href={track.url} 
+										download={track.name}
+										class="btn btn-sm btn-secondary btn-outline"
+									>
+										Download {track.name}
+									</a>
+								</div>
+							</div>
+						{/each}
 					</div>
 				{/if}
 			{/if}
