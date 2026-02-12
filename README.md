@@ -1,42 +1,85 @@
-# sv
+# Audio Track Extractor
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Audio Track Extractorは、SvelteKitを使用して構築されたウェブアプリケーションで、音声トラックの抽出機能を提供します。このプロジェクトは、FFmpegライブラリを活用して音声ファイルを処理します。
 
-## Creating a project
+## プロジェクト概要
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **技術スタック**: SvelteKit, TypeScript, TailwindCSS, DaisyUI, FFmpeg
+- **主要機能**:
+  - 音声ファイルのアップロード
+  - 音声トラックの抽出とプレビュー
+  - Cloudflare Workersへのデプロイ対応
+- **テスト**: Vitest（ユニットテスト）、Playwright（E2Eテスト）
 
-```sh
-# create a new project
-npx sv create my-app
-```
+## セットアップ方法
 
-To recreate this project with the same configuration:
+### 必要なツール
 
-```sh
-# recreate this project
-pnpm dlx sv create --template minimal --types ts --add prettier eslint vitest="usages:unit,component" mcp="ide:vscode+setup:remote" playwright tailwindcss="plugins:typography,forms" sveltekit-adapter="adapter:cloudflare+cfTarget:workers" --install pnpm audio-track-extractor
-```
+- Node.js（推奨バージョン: 16以上）
+- pnpm（パッケージマネージャ）
 
-## Developing
+### インストール手順
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+1. リポジトリをクローンします。
 
-```sh
-npm run dev
+    ```sh
+    git clone <リポジトリURL>
+    cd audio-track-extractor
+    ```
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+2. 依存関係をインストールします。
 
-## Building
+   ```sh
+   pnpm install
+   ```
 
-To create a production version of your app:
+3. 開発サーバーを起動します。
 
-```sh
-npm run build
-```
+   ```sh
+   pnpm run dev
+   ```
 
-You can preview the production build with `npm run preview`.
+   ブラウザで `http://localhost:5173` を開いてアプリケーションを確認できます。
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+### ビルドとデプロイ
+
+1. プロダクションビルドを作成します。
+
+   ```sh
+   pnpm run build
+   ```
+
+2. Cloudflare Workersでプレビューします。
+
+   ```sh
+   pnpm run preview
+   ```
+
+3. デプロイには、`wrangler` を使用します。環境変数を設定した後、以下のコマンドを実行してください。
+
+   ```sh
+   pnpm run deploy
+   ```
+
+## 開発計画
+
+1. **FFmpeg機能の実装**:
+   - 音声トラックの抽出ロジックを作成。
+   - `@ffmpeg/ffmpeg` と `@ffmpeg/util` を活用。
+
+2. **UIの構築**:
+   - TailwindCSSとDaisyUIを使用して、直感的なインターフェースをデザイン。
+   - 音声ファイルのアップロードとプレビュー機能を追加。
+
+3. **テストの整備**:
+   - ユニットテスト（Vitest）とE2Eテスト（Playwright）を設定。
+   - 主要な機能のテストケースを作成。
+
+4. **Cloudflare Workersへのデプロイ準備**:
+   - `wrangler` を使用してデプロイ設定を確認。
+   - 必要な環境変数を設定。
+
+5. **ドキュメントの整備**:
+   - READMEに使用方法と開発手順を追記。
+
+> 詳細なドキュメントやサポートについては、プロジェクトの[GitHubリポジトリ](https://github.com/)をご覧ください。
