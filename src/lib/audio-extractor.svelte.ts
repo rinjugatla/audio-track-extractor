@@ -10,6 +10,8 @@ export interface SelectableAudioTrack extends AudioTrackInfo {
 export interface ExtractedTrack {
 	/** ファイル名 */
 	name: string;
+	/** トラック番号（1始まり） */
+	number: number;
 	/** Object URL (再生・ダウンロード用) */
 	url: string;
 	/** 表示用のラベル */
@@ -133,6 +135,7 @@ export class AudioExtractor {
 				const originalTrack = this.tracks.find((t) => t.streamIndex === track.streamIndex);
 				return {
 					name: track.filename,
+					number: track.streamIndex + 1,
 					url: URL.createObjectURL(blob),
 					label: originalTrack ? `Track ${originalTrack.index + 1}` : `Track ${track.filename}`
 				};
