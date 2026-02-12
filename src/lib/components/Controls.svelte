@@ -1,0 +1,41 @@
+<script lang="ts">
+	interface Props {
+		outputFormat: 'mp3' | 'aac' | 'wav';
+		isProcessing: boolean;
+		canExtract: boolean;
+		onExtract: () => void;
+	}
+
+	let { outputFormat = $bindable(), isProcessing, canExtract, onExtract }: Props = $props();
+</script>
+
+<div class="flex flex-col gap-2">
+	<label class="label" for="output-format">
+		<span class="label-text">Output Format</span>
+	</label>
+	<select
+		id="output-format"
+		bind:value={outputFormat}
+		class="select-bordered select w-full"
+		disabled={isProcessing}
+	>
+		<option value="mp3">MP3</option>
+		<option value="aac">AAC</option>
+		<option value="wav">WAV</option>
+	</select>
+</div>
+
+<div class="mt-4 card-actions justify-center">
+	<button
+		class="btn w-full btn-primary md:w-auto"
+		onclick={onExtract}
+		disabled={!canExtract || isProcessing}
+	>
+		{#if isProcessing}
+			<span class="loading loading-spinner"></span>
+			Processing...
+		{:else}
+			Extract Selected Audio
+		{/if}
+	</button>
+</div>
