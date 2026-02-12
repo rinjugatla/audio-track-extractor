@@ -88,7 +88,10 @@
 
 				<LogViewer logs={viewModel.logs} />
 
-				<ResultList selectedFile={viewModel.selectedFile} extractedTracks={viewModel.extractedTracks} />
+				<ResultList
+					selectedFile={viewModel.selectedFile}
+					extractedTracks={viewModel.extractedTracks}
+				/>
 			{/if}
 		</div>
 	</div>

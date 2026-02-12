@@ -231,8 +231,8 @@ export class FFmpegService {
 
 		try {
 			await this.ffmpeg.exec(args);
-this.ffmpeg.off('log', progressHandler);
-			
+			this.ffmpeg.off('log', progressHandler);
+
 			// 出力ファイルを読み込む
 			for (const outInfo of outputNames) {
 				try {

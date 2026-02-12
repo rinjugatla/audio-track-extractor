@@ -13,7 +13,13 @@
 		onExtract: () => void;
 	}
 
-	let { outputFormat = $bindable(), isProcessing, progress, canExtract, onExtract }: Props = $props();
+	let {
+		outputFormat = $bindable(),
+		isProcessing,
+		progress,
+		canExtract,
+		onExtract
+	}: Props = $props();
 </script>
 
 <div class="flex flex-col gap-2">
@@ -35,7 +41,7 @@
 <div class="mt-4 card-actions flex-col items-center justify-center gap-4">
 	{#if isProcessing}
 		<div class="flex w-full flex-col gap-1">
-			<progress class="progress progress-primary w-full" value={progress} max="100"></progress>
+			<progress class="progress w-full progress-primary" value={progress} max="100"></progress>
 			<div class="text-right text-xs text-base-content/70">{progress}%</div>
 		</div>
 	{/if}
