@@ -8,7 +8,7 @@
 	let message = $state('Loading FFmpeg...');
 	let logs = $state<string[]>([]);
 	let selectedFile = $state<File | null>(null);
-	let extractedTracks = $state<{ name: string; url: string }[]>([]);
+	let extractedTracks = $state<{ name: string; url: string; label: string }[]>([]);
 	let tracks = $state<(AudioTrackInfo & { selected: boolean })[]>([]);
 	let outputFormat = $state<'mp3' | 'aac' | 'wav'>('mp3');
 	let error = $state<string | null>(null);
@@ -86,9 +86,11 @@
 				const blob = new Blob([track.data as unknown as BlobPart], {
 					type: `audio/${outputFormat}`
 				});
+				const originalTrack = tracks.find((t) => t.streamIndex === track.streamIndex);
 				return {
 					name: track.filename,
-					url: URL.createObjectURL(blob)
+					url: URL.createObjectURL(blob),
+					label: originalTrack ? `Track ${originalTrack.index + 1}` : `Track ${track.filename}`
 				};
 			});
 
@@ -260,7 +262,7 @@
 
 				{#if logs.length > 0}
 					<div class="mockup-code mt-6 max-h-40 w-full overflow-y-auto text-left text-xs">
-						{#each logs as log}
+						{#each logs as log, i (i)}
 							<pre data-prefix=">"><code>{log}</code></pre>
 						{/each}
 					</div>
@@ -273,9 +275,9 @@
 							Extraction Successful! ({extractedTracks.length} tracks)
 						</h3>
 
-						{#each extractedTracks as track, i}
+						{#each extractedTracks as track (track.name)}
 							<div class="card w-full bg-base-200 p-4 shadow-sm">
-								<h4 class="mb-2 text-left font-bold">Track {i + 1}</h4>
+								<h4 class="mb-2 text-left font-bold">{track.label}</h4>
 								<audio controls src={track.url} class="mb-2 w-full"></audio>
 								<div class="flex justify-end">
 									<a

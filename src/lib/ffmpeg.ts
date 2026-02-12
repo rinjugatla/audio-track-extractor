@@ -114,7 +114,7 @@ export class FFmpegService {
 		file: File,
 		outputFormat: 'mp3' | 'aac' | 'wav' = 'mp3',
 		targetStreamIndices: number[] = [] // Optional: if empty, extract all
-	): Promise<{ filename: string; data: Uint8Array }[]> {
+	): Promise<{ filename: string; data: Uint8Array; streamIndex: number }[]> {
 		if (!this.loaded || !this.ffmpeg) {
 			throw new Error('FFmpeg not loaded');
 		}
@@ -170,15 +170,15 @@ export class FFmpegService {
 			throw new Error('No audio tracks found or selected');
 		}
 
-		const results: { filename: string; data: Uint8Array }[] = [];
+		const results: { filename: string; data: Uint8Array; streamIndex: number }[] = [];
 		const args = ['-i', inputPath];
-		const outputNames: string[] = [];
+		const outputNames: { name: string; streamIndex: number }[] = [];
 
 		const codecArgs = this.getCodecArgs(outputFormat).filter((a) => a !== '-vn');
 
 		targetStreamIndices.forEach((streamIndex, i) => {
 			const outName = `track_${streamIndex}_${i}.${outputFormat}`;
-			outputNames.push(outName);
+			outputNames.push({ name: outName, streamIndex });
 			// Map specific audio track using the stream index directly
 			args.push('-map', `0:${streamIndex}`);
 			// Add codec options for this output
@@ -192,13 +192,13 @@ export class FFmpegService {
 			await this.ffmpeg.exec(args);
 
 			// Read all output files
-			for (const outName of outputNames) {
+			for (const outInfo of outputNames) {
 				try {
-					const data = await this.ffmpeg.readFile(outName);
-					results.push({ filename: outName, data: data as Uint8Array });
-					await this.ffmpeg.deleteFile(outName);
+					const data = await this.ffmpeg.readFile(outInfo.name);
+					results.push({ filename: outInfo.name, data: data as Uint8Array, streamIndex: outInfo.streamIndex });
+					await this.ffmpeg.deleteFile(outInfo.name);
 				} catch (e) {
-					console.warn(`Could not read output file ${outName}`, e);
+					console.warn(`Could not read output file ${outInfo.name}`, e);
 				}
 			}
 		} finally {
