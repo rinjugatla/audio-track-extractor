@@ -38,7 +38,7 @@
 	/>
 	{#if isProbing}
 		<div class="mt-2 flex items-center justify-center gap-2 text-sm text-base-content/70">
-			<span class="loading loading-spinner loading-xs"></span> Analyzing file...
+			<span class="loading loading-xs loading-spinner"></span> Analyzing file...
 		</div>
 	{:else if selectedFile}
 		<div class="text-left text-sm text-base-content/70">

@@ -29,7 +29,7 @@
 		class="mockup-code mt-6 max-h-32 w-full overflow-y-auto text-left text-xs"
 	>
 		{#each logs as log, i (i)}
-			<pre data-prefix=">" class="whitespace-pre-wrap wrap-break-words"><code>{log}</code></pre>
+			<pre data-prefix=">" class="wrap-break-words whitespace-pre-wrap"><code>{log}</code></pre>
 		{/each}
 	</div>
 {/if}

@@ -148,14 +148,18 @@ export class FFmpegService {
 			// Let's just implement a quick count or assume caller provides indices.
 			// For this refactor, I'll assume caller provides indices if they want specific tracks,
 			// or ALL tracks if array is empty (which requires probing).
-			
+
 			// Let's probe using the current mount.
 			const logs: string[] = [];
 			const logHandler = ({ message }: { message: string }) => logs.push(message);
 			this.ffmpeg.on('log', logHandler);
-			try { await this.ffmpeg.exec(['-i', inputPath]); } catch (e) { /* expected */ }
+			try {
+				await this.ffmpeg.exec(['-i', inputPath]);
+			} catch (e) {
+				/* expected */
+			}
 			this.ffmpeg.off('log', logHandler);
-			
+
 			const output = logs.join('\n');
 			const regex = /Stream #0:(\d+).*?: Audio:/g;
 			let match;
@@ -195,7 +199,11 @@ export class FFmpegService {
 			for (const outInfo of outputNames) {
 				try {
 					const data = await this.ffmpeg.readFile(outInfo.name);
-					results.push({ filename: outInfo.name, data: data as Uint8Array, streamIndex: outInfo.streamIndex });
+					results.push({
+						filename: outInfo.name,
+						data: data as Uint8Array,
+						streamIndex: outInfo.streamIndex
+					});
 					await this.ffmpeg.deleteFile(outInfo.name);
 				} catch (e) {
 					console.warn(`Could not read output file ${outInfo.name}`, e);

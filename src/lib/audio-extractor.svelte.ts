@@ -34,7 +34,7 @@ export class AudioExtractor {
 				// ここでは全てのログを保持してもいいが、パフォーマンスを考慮して適宜トリミングするか、
 				// またはUI側でslice表示するか。元のコードはslice(-4)していた。
 				// ここでは全てのログを追加する形にして、表示側で制御、あるいは無限に増えないように管理する。
-				this.logs = [...this.logs, message]; 
+				this.logs = [...this.logs, message];
 			});
 			this.message = 'Ready';
 			this.isLoaded = true;

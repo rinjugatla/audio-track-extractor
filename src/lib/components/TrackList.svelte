@@ -13,18 +13,18 @@
 {#if tracks.length > 0}
 	<div class="divider text-sm text-base-content/50">Audio Tracks Found</div>
 	<div class="flex w-full flex-col gap-2">
-		<div class="flex justify-between items-center">
+		<div class="flex items-center justify-between">
 			<span class="text-sm font-bold">{tracks.length} tracks detected</span>
 			<div class="flex gap-2">
 				<button
-					class="btn btn-xs btn-outline"
+					class="btn btn-outline btn-xs"
 					onclick={() => onToggleAll(true)}
 					disabled={isProcessing}
 				>
 					Select All
 				</button>
 				<button
-					class="btn btn-xs btn-outline"
+					class="btn btn-outline btn-xs"
 					onclick={() => onToggleAll(false)}
 					disabled={isProcessing}
 				>
@@ -43,7 +43,7 @@
 					<input
 						type="checkbox"
 						bind:checked={track.selected}
-						class="checkbox checkbox-primary checkbox-sm"
+						class="checkbox checkbox-sm checkbox-primary"
 						disabled={isProcessing}
 					/>
 					<div class="flex flex-col text-left text-xs">

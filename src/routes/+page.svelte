@@ -16,7 +16,7 @@
 
 <div class="container mx-auto max-w-2xl p-4">
 	<div class="card bg-base-100 shadow-xl">
-		<figure class="px-10 pt-10 flex flex-col items-center">
+		<figure class="flex flex-col items-center px-10 pt-10">
 			<h1 class="text-4xl font-bold text-primary">Audio Track Extractor</h1>
 			<p class="mt-2 flex items-center gap-2 text-sm text-base-content/70">
 				<svg
@@ -35,7 +35,6 @@
 			</p>
 		</figure>
 		<div class="card-body items-center text-center">
-
 			{#if !viewModel.isLoaded && !viewModel.error}
 				<div class="flex flex-col items-center gap-2">
 					<span class="loading loading-lg loading-spinner"></span>

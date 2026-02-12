@@ -20,11 +20,7 @@
 				<h4 class="mb-2 text-left font-bold">{track.label}</h4>
 				<audio controls src={track.url} class="mb-2 w-full"></audio>
 				<div class="flex justify-end">
-					<a
-						href={track.url}
-						download={track.name}
-						class="btn btn-outline btn-sm btn-secondary"
-					>
+					<a href={track.url} download={track.name} class="btn btn-outline btn-sm btn-secondary">
 						Download {track.name}
 					</a>
 				</div>
