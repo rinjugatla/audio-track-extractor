@@ -1,6 +1,14 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { toBlobURL } from '@ffmpeg/util';
 
+export interface AudioTrackInfo {
+	index: number;
+	streamIndex: number; // The global stream index (0:1, 0:2, etc.)
+	language?: string;
+	codec: string;
+	description: string;
+}
+
 export class FFmpegService {
 	private ffmpeg: FFmpeg | null = null;
 	private loaded = false;
@@ -35,9 +43,77 @@ export class FFmpegService {
 		this.loaded = true;
 	}
 
+	async getAudioTracks(file: File): Promise<AudioTrackInfo[]> {
+		if (!this.loaded || !this.ffmpeg) {
+			throw new Error('FFmpeg not loaded');
+		}
+
+		const inputDir = '/input_mnt_probe';
+		const fileName = file.name;
+		const inputPath = `${inputDir}/${fileName}`;
+
+		try {
+			await this.ffmpeg.createDir(inputDir);
+		} catch (e) {
+			// Directory likely exists
+		}
+
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		await this.ffmpeg.mount('WORKERFS' as any, { files: [file] }, inputDir);
+
+		const logs: string[] = [];
+		const logHandler = ({ message }: { message: string }) => logs.push(message);
+		this.ffmpeg.on('log', logHandler);
+
+		try {
+			await this.ffmpeg.exec(['-i', inputPath]);
+		} catch (e) {
+			// Expected code 1
+		}
+
+		this.ffmpeg.off('log', logHandler);
+
+		try {
+			await this.ffmpeg.unmount(inputDir);
+			await this.ffmpeg.deleteDir(inputDir);
+		} catch (cleanupErr) {
+			console.error('Cleanup error:', cleanupErr);
+		}
+
+		const output = logs.join('\n');
+		const tracks: AudioTrackInfo[] = [];
+
+		// Regex to parse FFmpeg stream output
+		// We use a more flexible regex to handle various formats:
+		// Stream #0:1(und): Audio: aac ...
+		// Stream #0:1[0x1]: Audio: mp3 ...
+		// Stream #0:1: Audio: wav ...
+		const regex = /Stream #0:(\d+)(?:.*?\((.*?)\))?.*?: Audio: (.*)/g;
+		let match;
+
+		let audioIndex = 0;
+		while ((match = regex.exec(output)) !== null) {
+			const streamIndex = parseInt(match[1], 10);
+			const language = match[2] || 'und';
+			const details = match[3];
+			const codec = details.split(' ')[0].trim().replace(',', '');
+
+			tracks.push({
+				index: audioIndex++,
+				streamIndex: streamIndex,
+				language,
+				codec,
+				description: details
+			});
+		}
+
+		return tracks;
+	}
+
 	async extractAudio(
 		file: File,
-		outputFormat: 'mp3' | 'aac' | 'wav' = 'mp3'
+		outputFormat: 'mp3' | 'aac' | 'wav' = 'mp3',
+		targetStreamIndices: number[] = [] // Optional: if empty, extract all
 	): Promise<{ filename: string; data: Uint8Array }[]> {
 		if (!this.loaded || !this.ffmpeg) {
 			throw new Error('FFmpeg not loaded');
@@ -60,39 +136,56 @@ export class FFmpegService {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		await this.ffmpeg.mount('WORKERFS' as any, { files: [file] }, inputDir);
 
-		let trackCount: number;
-		try {
-			trackCount = await this.getAudioStreamCount(inputPath);
-		} catch (e) {
-			// If probing fails, unmount and rethrow
-			await this.ffmpeg.unmount(inputDir);
-			await this.ffmpeg.deleteDir(inputDir);
-			throw e;
+		// If no specific streams requested, try to get all
+		// However, we rely on the component passing the indices usually.
+		// If empty, we probe again just in case (fallback for backward compatibility if any)
+		if (targetStreamIndices.length === 0) {
+			// We can reuse getAudioTracks logic here or just rely on the component having called it.
+			// Ideally the component should always pass indices now.
+			// Let's quickly probe if we really have no info, or just fail.
+			// For robustness, let's probe.
+			// But since we are already mounted in inputDir, not inputDir_probe...
+			// Let's just implement a quick count or assume caller provides indices.
+			// For this refactor, I'll assume caller provides indices if they want specific tracks,
+			// or ALL tracks if array is empty (which requires probing).
+			
+			// Let's probe using the current mount.
+			const logs: string[] = [];
+			const logHandler = ({ message }: { message: string }) => logs.push(message);
+			this.ffmpeg.on('log', logHandler);
+			try { await this.ffmpeg.exec(['-i', inputPath]); } catch (e) { /* expected */ }
+			this.ffmpeg.off('log', logHandler);
+			
+			const output = logs.join('\n');
+			const regex = /Stream #0:(\d+).*?: Audio:/g;
+			let match;
+			while ((match = regex.exec(output)) !== null) {
+				targetStreamIndices.push(parseInt(match[1], 10));
+			}
 		}
 
-		if (trackCount === 0) {
+		if (targetStreamIndices.length === 0) {
 			await this.ffmpeg.unmount(inputDir);
 			await this.ffmpeg.deleteDir(inputDir);
-			throw new Error('No audio tracks found');
+			throw new Error('No audio tracks found or selected');
 		}
 
 		const results: { filename: string; data: Uint8Array }[] = [];
 		const args = ['-i', inputPath];
 		const outputNames: string[] = [];
 
-		const codecArgsRaw = this.getCodecArgs(outputFormat);
-		const codecArgs = codecArgsRaw.filter((a) => a !== '-vn');
+		const codecArgs = this.getCodecArgs(outputFormat).filter((a) => a !== '-vn');
 
-		for (let i = 0; i < trackCount; i++) {
-			const outName = `track_${i + 1}.${outputFormat}`;
+		targetStreamIndices.forEach((streamIndex, i) => {
+			const outName = `track_${streamIndex}_${i}.${outputFormat}`;
 			outputNames.push(outName);
-			// Map specific audio track
-			args.push('-map', `0:a:${i}`);
+			// Map specific audio track using the stream index directly
+			args.push('-map', `0:${streamIndex}`);
 			// Add codec options for this output
 			args.push(...codecArgs);
 			// Output filename for this track
 			args.push(outName);
-		}
+		});
 
 		try {
 			// Run the command
@@ -120,32 +213,6 @@ export class FFmpegService {
 		}
 
 		return results;
-	}
-
-	private async getAudioStreamCount(inputName: string): Promise<number> {
-		if (!this.ffmpeg) return 0;
-
-		const logs: string[] = [];
-		const logHandler = ({ message }: { message: string }) => logs.push(message);
-		this.ffmpeg.on('log', logHandler);
-
-		// Run ffmpeg -i inputName to get info
-		// This usually creates an error (exit code 1) because no output file is provided,
-		// but we only care about the logs.
-		try {
-			await this.ffmpeg.exec(['-i', inputName]);
-		} catch (e) {
-			// Output expected to verify info
-		}
-
-		this.ffmpeg.off('log', logHandler);
-
-		const output = logs.join('\n');
-		// Look for "Stream #0:x... Audio:"
-		// Example: Stream #0:1(und): Audio: aac ...
-		// We use a looser regex to handle various metadata formats (lang codes, ids, etc)
-		const matches = output.match(/Stream #0:\d+.*?: Audio:/g);
-		return matches ? matches.length : 0;
 	}
 
 	private getCodecArgs(format: string): string[] {
