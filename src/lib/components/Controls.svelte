@@ -1,23 +1,13 @@
 <script lang="ts">
-	/**
-	 * 操作コントロールコンポーネントのProps
-	 */
+	/** 操作コントロールコンポーネントのProps */
 	interface Props {
-		/**
-		 * 音声出力フォーマット (bindable)
-		 */
+		/** 音声出力フォーマット (bindable) */
 		outputFormat: 'mp3' | 'aac' | 'wav';
-		/**
-		 * 処理中かどうか
-		 */
+		/** 処理中かどうか */
 		isProcessing: boolean;
-		/**
-		 * 抽出実行が可能かどうか
-		 */
+		/** 抽出実行が可能かどうか */
 		canExtract: boolean;
-		/**
-		 * 抽出ボタンクリック時のコールバック
-		 */
+		/** 抽出ボタンクリック時のコールバック */
 		onExtract: () => void;
 	}
 

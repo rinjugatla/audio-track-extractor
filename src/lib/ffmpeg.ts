@@ -5,25 +5,15 @@ import { toBlobURL } from '@ffmpeg/util';
  * 音声トラックに関する情報を保持するインターフェース
  */
 export interface AudioTrackInfo {
-	/**
-	 * トラックの連番インデックス (0始まり)
-	 */
+	/** トラックの連番インデックス (0始まり) */
 	index: number;
-	/**
-	 * FFmpegによって割り当てられたグローバルなストリームインデックス (例: 0:1 => 1)
-	 */
+	/** FFmpegによって割り当てられたグローバルなストリームインデックス (例: 0:1 => 1) */
 	streamIndex: number;
-	/**
-	 * 言語コード (例: 'jpn', 'eng', 'und'など)
-	 */
+	/** 言語コード (例: 'jpn', 'eng', 'und'など) */
 	language?: string;
-	/**
-	 * コーデック名 (例: 'aac', 'mp3', 'pcm_s16le'など)
-	 */
+	/** コーデック名 (例: 'aac', 'mp3', 'pcm_s16le'など) */
 	codec: string;
-	/**
-	 * ストリームの詳細な説明
-	 */
+	/** ストリームの詳細な説明 */
 	description: string;
 }
 

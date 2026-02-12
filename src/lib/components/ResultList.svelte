@@ -1,13 +1,9 @@
 <script lang="ts">
 	import type { ExtractedTrack } from '$lib/audio-extractor.svelte';
 
-	/**
-	 * 抽出結果リストコンポーネントのProps
-	 */
+	/** 抽出結果リストコンポーネントのProps */
 	interface Props {
-		/**
-		 * 抽出されたトラックのリスト
-		 */
+		/** 抽出されたトラックのリスト */
 		extractedTracks: ExtractedTrack[];
 	}
 
