@@ -1,13 +1,31 @@
 <script lang="ts">
+	/**
+	 * ファイルアップロードコンポーネントのProps
+	 */
 	interface Props {
+		/**
+		 * 現在選択されているファイル
+		 */
 		selectedFile: File | null;
+		/**
+		 * 処理中かどうか (無効化制御用)
+		 */
 		isProcessing: boolean;
+		/**
+		 * ファイル分析中かどうか (無効化制御用)
+		 */
 		isProbing: boolean;
+		/**
+		 * ファイルが選択された時のコールバック
+		 */
 		onFileSelect: (file: File) => void;
 	}
 
 	let { selectedFile, isProcessing, isProbing, onFileSelect }: Props = $props();
 
+	/**
+	 * input要素の変更イベントハンドラ
+	 */
 	function handleChange(event: Event) {
 		const target = event.target as HTMLInputElement;
 		if (target.files && target.files.length > 0) {
@@ -15,6 +33,10 @@
 		}
 	}
 
+	/**
+	 * バイト数を読みやすい形式にフォーマットする
+	 * @param bytes バイト数
+	 */
 	function formatSize(bytes: number) {
 		if (bytes === 0) return '0 Bytes';
 		const k = 1024;

@@ -1,22 +1,48 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { toBlobURL } from '@ffmpeg/util';
 
+/**
+ * 音声トラックに関する情報を保持するインターフェース
+ */
 export interface AudioTrackInfo {
+	/**
+	 * トラックの連番インデックス (0始まり)
+	 */
 	index: number;
-	streamIndex: number; // The global stream index (0:1, 0:2, etc.)
+	/**
+	 * FFmpegによって割り当てられたグローバルなストリームインデックス (例: 0:1 => 1)
+	 */
+	streamIndex: number;
+	/**
+	 * 言語コード (例: 'jpn', 'eng', 'und'など)
+	 */
 	language?: string;
+	/**
+	 * コーデック名 (例: 'aac', 'mp3', 'pcm_s16le'など)
+	 */
 	codec: string;
+	/**
+	 * ストリームの詳細な説明
+	 */
 	description: string;
 }
 
+/**
+ * FFmpegの操作を管理するサービスクラス
+ * シングルトンとしてインスタンス化され、FFmpegのロード、ファイル分析、音声抽出の責務を負う
+ */
 export class FFmpegService {
 	private ffmpeg: FFmpeg | null = null;
 	private loaded = false;
 
 	constructor() {
-		// Do not instantiate FFmpeg in constructor to avoid SSR errors
+		// SSRエラーを回避するため、コンストラクタではFFmpegをインスタンス化しない
 	}
 
+	/**
+	 * FFmpegコアとWASMをロードし、初期化する
+	 * @param messageCallback FFmpegからのログメッセージを受け取るコールバック関数
+	 */
 	async load(messageCallback?: (msg: { message: string; type: string }) => void) {
 		if (this.loaded && this.ffmpeg) return;
 
@@ -28,11 +54,7 @@ export class FFmpegService {
 
 		if (messageCallback) {
 			this.ffmpeg.on('log', messageCallback);
-			this.ffmpeg.on('progress', (event) => {
-				// You might want to handle progress here too if needed,
-				// but 'log' gives text updates.
-				// Progress event gives { progress: number, time: number }
-			});
+			// 必要な場合はここで'progress'イベントもハンドル可能
 		}
 
 		await this.ffmpeg.load({
@@ -43,6 +65,12 @@ export class FFmpegService {
 		this.loaded = true;
 	}
 
+	/**
+	 * 動画/音声ファイルから音声トラック情報を取得する
+	 * @param file 分析対象のファイル
+	 * @returns 検出された音声トラックのリスト
+	 * @throws FFmpegがロードされていない場合にエラーをスロー
+	 */
 	async getAudioTracks(file: File): Promise<AudioTrackInfo[]> {
 		if (!this.loaded || !this.ffmpeg) {
 			throw new Error('FFmpeg not loaded');
@@ -55,9 +83,10 @@ export class FFmpegService {
 		try {
 			await this.ffmpeg.createDir(inputDir);
 		} catch (e) {
-			// Directory likely exists
+			// ディレクトリが既に存在する場合は無視
 		}
 
+		// ファイルをメモリに全てロードせず処理するためWORKERFSを使用
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		await this.ffmpeg.mount('WORKERFS' as any, { files: [file] }, inputDir);
 
@@ -66,9 +95,10 @@ export class FFmpegService {
 		this.ffmpeg.on('log', logHandler);
 
 		try {
+			// ファイル情報を取得のみ行うために入力として指定だけする
 			await this.ffmpeg.exec(['-i', inputPath]);
 		} catch (e) {
-			// Expected code 1
+			// 実行情報を表示して終了コード1で終わるのは仕様通りの挙動
 		}
 
 		this.ffmpeg.off('log', logHandler);
@@ -83,11 +113,7 @@ export class FFmpegService {
 		const output = logs.join('\n');
 		const tracks: AudioTrackInfo[] = [];
 
-		// Regex to parse FFmpeg stream output
-		// We use a more flexible regex to handle various formats:
-		// Stream #0:1(und): Audio: aac ...
-		// Stream #0:1[0x1]: Audio: mp3 ...
-		// Stream #0:1: Audio: wav ...
+		// FFmpegの出力からストリーム情報を解析する正規表現
 		const regex = /Stream #0:(\d+)(?:.*?\((.*?)\))?.*?: Audio: (.*)/g;
 		let match;
 
@@ -110,46 +136,37 @@ export class FFmpegService {
 		return tracks;
 	}
 
+	/**
+	 * 指定された音声トラックを抽出し、指定フォーマットに変換する
+	 * @param file ソースファイル
+	 * @param outputFormat 出力フォーマット ('mp3' | 'aac' | 'wav')
+	 * @param targetStreamIndices 抽出対象のストリームインデックス配列。空の場合は全ての音声トラックを抽出
+	 * @returns 抽出されたファイルのバイナリデータとメタ情報の配列
+	 */
 	async extractAudio(
 		file: File,
 		outputFormat: 'mp3' | 'aac' | 'wav' = 'mp3',
-		targetStreamIndices: number[] = [] // Optional: if empty, extract all
+		targetStreamIndices: number[] = []
 	): Promise<{ filename: string; data: Uint8Array; streamIndex: number }[]> {
 		if (!this.loaded || !this.ffmpeg) {
 			throw new Error('FFmpeg not loaded');
 		}
 
-		// Mount the file effectively avoiding memory issues for large files
 		const inputDir = '/input_mnt';
 		const fileName = file.name;
 		const inputPath = `${inputDir}/${fileName}`;
 
 		try {
-			// Clean up previous mount if somehow stuck (though we clean up at end)
-			// or create the dir
 			await this.ffmpeg.createDir(inputDir);
 		} catch (e) {
-			// Directory likely exists
+			// ディレクトリが既に存在する場合
 		}
 
-		// WORKERFS allows mounting the File object directly without loading it all into RAM
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		await this.ffmpeg.mount('WORKERFS' as any, { files: [file] }, inputDir);
 
-		// If no specific streams requested, try to get all
-		// However, we rely on the component passing the indices usually.
-		// If empty, we probe again just in case (fallback for backward compatibility if any)
+		// 抽出対象が指定されていない場合、再スキャンして検出を試みる
 		if (targetStreamIndices.length === 0) {
-			// We can reuse getAudioTracks logic here or just rely on the component having called it.
-			// Ideally the component should always pass indices now.
-			// Let's quickly probe if we really have no info, or just fail.
-			// For robustness, let's probe.
-			// But since we are already mounted in inputDir, not inputDir_probe...
-			// Let's just implement a quick count or assume caller provides indices.
-			// For this refactor, I'll assume caller provides indices if they want specific tracks,
-			// or ALL tracks if array is empty (which requires probing).
-
-			// Let's probe using the current mount.
 			const logs: string[] = [];
 			const logHandler = ({ message }: { message: string }) => logs.push(message);
 			this.ffmpeg.on('log', logHandler);
@@ -183,19 +200,19 @@ export class FFmpegService {
 		targetStreamIndices.forEach((streamIndex, i) => {
 			const outName = `track_${streamIndex}_${i}.${outputFormat}`;
 			outputNames.push({ name: outName, streamIndex });
-			// Map specific audio track using the stream index directly
+
+			// 特定のストリームをマップ
 			args.push('-map', `0:${streamIndex}`);
-			// Add codec options for this output
+			// コーデックオプションを追加
 			args.push(...codecArgs);
-			// Output filename for this track
+			// 出力ファイル名
 			args.push(outName);
 		});
 
 		try {
-			// Run the command
 			await this.ffmpeg.exec(args);
 
-			// Read all output files
+			// 出力ファイルを読み込む
 			for (const outInfo of outputNames) {
 				try {
 					const data = await this.ffmpeg.readFile(outInfo.name);
@@ -210,8 +227,7 @@ export class FFmpegService {
 				}
 			}
 		} finally {
-			// Cleanup input mount
-			// Even if exec fails, we must unmount
+			// クリーンアップ
 			try {
 				await this.ffmpeg.unmount(inputDir);
 				await this.ffmpeg.deleteDir(inputDir);
@@ -223,6 +239,11 @@ export class FFmpegService {
 		return results;
 	}
 
+	/**
+	 * 指定されたフォーマットに対するFFmpegのコーデック引数を取得する
+	 * @param format 出力フォーマット
+	 * @returns FFmpeg引数の配列
+	 */
 	private getCodecArgs(format: string): string[] {
 		switch (format) {
 			case 'mp3':

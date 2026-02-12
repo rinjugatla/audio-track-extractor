@@ -1,9 +1,21 @@
 <script lang="ts">
 	import type { SelectableAudioTrack } from '$lib/audio-extractor.svelte';
 
+	/**
+	 * トラックリストコンポーネントのProps
+	 */
 	interface Props {
+		/**
+		 * 音声トラック情報のリスト (bindable)
+		 */
 		tracks: SelectableAudioTrack[];
+		/**
+		 * 処理中かどうか
+		 */
 		isProcessing: boolean;
+		/**
+		 * 全選択/全解除ボタンクリック時のコールバック
+		 */
 		onToggleAll: (select: boolean) => void;
 	}
 

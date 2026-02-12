@@ -1,5 +1,11 @@
 <script lang="ts">
+	/**
+	 * ログ表示用コンポーネントのProps
+	 */
 	interface Props {
+		/**
+		 * 表示するログメッセージの配列
+		 */
 		logs: string[];
 	}
 
@@ -8,12 +14,19 @@
 	let container = $state<HTMLDivElement>();
 	let isSticky = $state(true);
 
+	/**
+	 * スクロールイベントハンドラ
+	 * ユーザーが手動でスクロールした場合、自動スクロールを一時停止するか判定する
+	 */
 	function onScroll() {
 		if (!container) return;
 		const { scrollTop, scrollHeight, clientHeight } = container;
 		isSticky = scrollHeight - (scrollTop + clientHeight) < 20;
 	}
 
+	/**
+	 * ログが更新されたときに、最下部を表示していれば自動スクロールするEffect
+	 */
 	$effect(() => {
 		logs;
 		if (isSticky && container) {

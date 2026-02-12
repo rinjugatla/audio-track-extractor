@@ -1,32 +1,87 @@
 import { ffmpegService, type AudioTrackInfo } from './ffmpeg';
 
-// UI用の拡張トラック情報
+/**
+ * UI側で選択状態を管理するための拡張音声トラック情報
+ */
 export interface SelectableAudioTrack extends AudioTrackInfo {
+	/**
+	 * ユーザーによって選択されているかどうか
+	 */
 	selected: boolean;
 }
 
+/**
+ * 抽出された音声トラックのデータ構造
+ */
 export interface ExtractedTrack {
+	/**
+	 * ファイル名
+	 */
 	name: string;
+	/**
+	 * Object URL (再生・ダウンロード用)
+	 */
 	url: string;
+	/**
+	 * 表示用のラベル
+	 */
 	label: string;
 }
 
+/**
+ * アプリケーションのメインロジックとなるViewModelクラス
+ * Svelte 5のRunesを使用してリアクティブな状態管理を行う
+ */
 export class AudioExtractor {
+	/**
+	 * FFmpegのロードが完了したかどうか
+	 */
 	isLoaded = $state(false);
+	/**
+	 * 音声抽出処理中かどうか
+	 */
 	isProcessing = $state(false);
+	/**
+	 * ファイル分析（プローブ）中かどうか
+	 */
 	isProbing = $state(false);
+	/**
+	 * 現在のステータスメッセージ
+	 */
 	message = $state('Loading FFmpeg...');
+	/**
+	 * FFmpegからのログメッセージ履歴
+	 */
 	logs = $state<string[]>([]);
+	/**
+	 * ユーザーが選択したファイル
+	 */
 	selectedFile = $state<File | null>(null);
+	/**
+	 * 抽出完了したトラックのリスト
+	 */
 	extractedTracks = $state<ExtractedTrack[]>([]);
+	/**
+	 * 検出された音声トラックのリスト
+	 */
 	tracks = $state<SelectableAudioTrack[]>([]);
+	/**
+	 * 出力フォーマット ('mp3' | 'aac' | 'wav')
+	 */
 	outputFormat = $state<'mp3' | 'aac' | 'wav'>('mp3');
+	/**
+	 * エラーメッセージ（nullの場合はエラーなし）
+	 */
 	error = $state<string | null>(null);
 
 	constructor() {
 		// 初期化ロジックは明示的に呼び出す形にする
 	}
 
+	/**
+	 * アプリケーションの初期化処理
+	 * FFmpegのロードを行う
+	 */
 	async init() {
 		try {
 			await ffmpegService.load(({ message }) => {
@@ -44,6 +99,11 @@ export class AudioExtractor {
 		}
 	}
 
+	/**
+	 * ファイルが選択された時のハンドラ
+	 * ファイルを分析し、音声トラック情報を取得する
+	 * @param file 選択されたファイル
+	 */
 	async handleFileSelect(file: File) {
 		this.selectedFile = file;
 		// Clear previous results
@@ -67,10 +127,17 @@ export class AudioExtractor {
 		}
 	}
 
+	/**
+	 * 全トラックの選択状態を一括で切り替える
+	 * @param select trueで全選択、falseで全解除
+	 */
 	toggleAll(select: boolean) {
 		this.tracks = this.tracks.map((t) => ({ ...t, selected: select }));
 	}
 
+	/**
+	 * 選択された音声トラックの抽出を実行する
+	 */
 	async extractAudio() {
 		if (!this.selectedFile) return;
 
@@ -114,6 +181,9 @@ export class AudioExtractor {
 		}
 	}
 
+	/**
+	 * 生成されたObject URLを破棄してメモリリークを防ぐ
+	 */
 	cleanupUrls() {
 		this.extractedTracks.forEach((track) => URL.revokeObjectURL(track.url));
 	}
