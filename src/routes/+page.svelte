@@ -76,6 +76,7 @@
 					<Controls
 						bind:outputFormat={viewModel.outputFormat}
 						isProcessing={viewModel.isProcessing}
+						progress={viewModel.progress}
 						canExtract={!!(
 							viewModel.selectedFile &&
 							viewModel.tracks.length > 0 &&

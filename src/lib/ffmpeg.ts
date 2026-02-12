@@ -58,10 +58,10 @@ export class FFmpegService {
 	/**
 	 * 動画/音声ファイルから音声トラック情報を取得する
 	 * @param file 分析対象のファイル
-	 * @returns 検出された音声トラックのリスト
+	 * @returns 検出された音声トラックのリストと動画の長さ（秒）
 	 * @throws FFmpegがロードされていない場合にエラーをスロー
 	 */
-	async getAudioTracks(file: File): Promise<AudioTrackInfo[]> {
+	async getAudioTracks(file: File): Promise<{ tracks: AudioTrackInfo[]; duration: number }> {
 		if (!this.loaded || !this.ffmpeg) {
 			throw new Error('FFmpeg not loaded');
 		}
@@ -102,6 +102,16 @@ export class FFmpegService {
 
 		const output = logs.join('\n');
 		const tracks: AudioTrackInfo[] = [];
+		let duration = 0;
+
+		// Duration: 00:09:42.57, ...
+		const durationMatch = /Duration: (\d{2}):(\d{2}):(\d{2}\.\d{2})/.exec(output);
+		if (durationMatch) {
+			const hours = parseFloat(durationMatch[1]);
+			const minutes = parseFloat(durationMatch[2]);
+			const seconds = parseFloat(durationMatch[3]);
+			duration = hours * 3600 + minutes * 60 + seconds;
+		}
 
 		// FFmpegの出力からストリーム情報を解析する正規表現
 		const regex = /Stream #0:(\d+)(?:.*?\((.*?)\))?.*?: Audio: (.*)/g;
@@ -123,7 +133,7 @@ export class FFmpegService {
 			});
 		}
 
-		return tracks;
+		return { tracks, duration };
 	}
 
 	/**
@@ -131,12 +141,16 @@ export class FFmpegService {
 	 * @param file ソースファイル
 	 * @param outputFormat 出力フォーマット ('mp3' | 'aac' | 'wav')
 	 * @param targetStreamIndices 抽出対象のストリームインデックス配列。空の場合は全ての音声トラックを抽出
+	 * @param totalDuration ファイルの総時間（秒）。進捗計算用
+	 * @param onProgress 進捗更新コールバック
 	 * @returns 抽出されたファイルのバイナリデータとメタ情報の配列
 	 */
 	async extractAudio(
 		file: File,
 		outputFormat: 'mp3' | 'aac' | 'wav' = 'mp3',
-		targetStreamIndices: number[] = []
+		targetStreamIndices: number[] = [],
+		totalDuration: number = 0,
+		onProgress?: (ratio: number) => void
 	): Promise<{ filename: string; data: Uint8Array; streamIndex: number }[]> {
 		if (!this.loaded || !this.ffmpeg) {
 			throw new Error('FFmpeg not loaded');
@@ -199,9 +213,26 @@ export class FFmpegService {
 			args.push(outName);
 		});
 
+		// 進捗を監視するためのログハンドラ
+		const progressHandler = ({ message }: { message: string }) => {
+			if (totalDuration > 0 && onProgress) {
+				const timeMatch = /time=(\d{2}):(\d{2}):(\d{2}\.\d{2})/.exec(message);
+				if (timeMatch) {
+					const hours = parseFloat(timeMatch[1]);
+					const minutes = parseFloat(timeMatch[2]);
+					const seconds = parseFloat(timeMatch[3]);
+					const currentTime = hours * 3600 + minutes * 60 + seconds;
+					const ratio = Math.min(currentTime / totalDuration, 1.0);
+					onProgress(ratio);
+				}
+			}
+		};
+		this.ffmpeg.on('log', progressHandler);
+
 		try {
 			await this.ffmpeg.exec(args);
-
+this.ffmpeg.off('log', progressHandler);
+			
 			// 出力ファイルを読み込む
 			for (const outInfo of outputNames) {
 				try {

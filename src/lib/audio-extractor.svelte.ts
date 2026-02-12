@@ -39,6 +39,10 @@ export class AudioExtractor {
 	extractedTracks = $state<ExtractedTrack[]>([]);
 	/** 検出された音声トラックのリスト */
 	tracks = $state<SelectableAudioTrack[]>([]);
+	/** 動画の長さ（秒） */
+	duration = $state(0);
+	/** 抽出の進捗状況 (0-100) */
+	progress = $state(0);
 	/** 出力フォーマット ('mp3' | 'aac' | 'wav') */
 	outputFormat = $state<'mp3' | 'aac' | 'wav'>('mp3');
 	/** エラーメッセージ（nullの場合はエラーなし） */
@@ -81,11 +85,14 @@ export class AudioExtractor {
 		this.extractedTracks = [];
 		this.error = null;
 		this.tracks = [];
+		this.duration = 0;
+		this.progress = 0;
 
 		this.isProbing = true;
 		try {
-			const audioTracks = await ffmpegService.getAudioTracks(this.selectedFile);
-			this.tracks = audioTracks.map((t) => ({ ...t, selected: true }));
+			const { tracks, duration } = await ffmpegService.getAudioTracks(this.selectedFile);
+			this.tracks = tracks.map((t) => ({ ...t, selected: true }));
+			this.duration = duration;
 			if (this.tracks.length === 0) {
 				this.error = 'No audio tracks found in this file.';
 			}
@@ -115,9 +122,9 @@ export class AudioExtractor {
 			this.error = 'Please select at least one track to extract.';
 			return;
 		}
-
 		this.isProcessing = true;
 		this.error = null;
+		this.progress = 0;
 		this.cleanupUrls();
 		this.extractedTracks = [];
 
@@ -125,7 +132,11 @@ export class AudioExtractor {
 			const results = await ffmpegService.extractAudio(
 				this.selectedFile,
 				this.outputFormat,
-				selectedIndices
+				selectedIndices,
+				this.duration,
+				(ratio) => {
+					this.progress = Math.round(ratio * 100);
+				}
 			);
 
 			this.extractedTracks = results.map((track) => {
