@@ -149,7 +149,7 @@ export class AudioExtractor {
 					number: track.streamIndex,
 					url: URL.createObjectURL(blob),
 					label: originalTrack ? `Track ${originalTrack.index + 1}` : `Track ${track.filename}`
-				};
+				} as ExtractedTrack;
 			});
 
 			this.message = `Extraction complete! Extracted ${this.extractedTracks.length} tracks.`;
