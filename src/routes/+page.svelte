@@ -101,12 +101,12 @@
 						{/if}
 					</div>
 
-					<div class="flex flex for="output-format">
+					<div class="flex flex-col gap-2">
+						<label class="label" for="output-format">
 							<span class="label-text">Output Format</span>
 						</label>
 						<select 
 							id="output-format"
-						<select 
 							bind:value={outputFormat} 
 							class="select select-bordered w-full"
 							disabled={isProcessing}
