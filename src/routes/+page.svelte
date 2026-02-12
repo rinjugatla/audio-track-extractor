@@ -80,8 +80,23 @@
 
 <div class="container mx-auto max-w-2xl p-4">
 	<div class="card bg-base-100 shadow-xl">
-		<figure class="px-10 pt-10">
+		<figure class="px-10 pt-10 flex flex-col items-center">
 			<h1 class="text-4xl font-bold text-primary">Audio Track Extractor</h1>
+			<p class="mt-2 flex items-center gap-2 text-sm text-base-content/70">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 0 20 20"
+					fill="currentColor"
+					class="h-4 w-4"
+				>
+					<path
+						fill-rule="evenodd"
+						d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z"
+						clip-rule="evenodd"
+					/>
+				</svg>
+				All processing is done locally. No data is sent to any server.
+			</p>
 		</figure>
 		<div class="card-body items-center text-center">
 
