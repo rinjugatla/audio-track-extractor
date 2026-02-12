@@ -6,7 +6,7 @@ export class FFmpegService {
 	private loaded = false;
 
 	constructor() {
-		this.ffmpeg = new FFmpeg();
+		// Do not instantiate FFmpeg in constructor to avoid SSR errors
 	}
 
 	async load(messageCallback?: (msg: { message: string, type: string }) => void) {
