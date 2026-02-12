@@ -54,7 +54,8 @@ export class FFmpegService {
 		}
 
 		// WORKERFS allows mounting the File object directly without loading it all into RAM
-		await this.ffmpeg.mount('WORKERFS', { files: [file] }, inputDir);
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		await this.ffmpeg.mount('WORKERFS' as any, { files: [file] }, inputDir);
 
 		let trackCount: number;
 		try {
