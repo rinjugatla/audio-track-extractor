@@ -35,7 +35,7 @@
 						download={`${filenameBase}${track.number}`}
 						class="btn btn-outline btn-sm btn-secondary"
 					>
-						Download {track.name}
+						Download {`${filenameBase}${track.number}`}
 					</a>
 				</div>
 			</div>
