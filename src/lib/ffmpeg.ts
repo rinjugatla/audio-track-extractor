@@ -9,7 +9,7 @@ export class FFmpegService {
 		// Do not instantiate FFmpeg in constructor to avoid SSR errors
 	}
 
-	async load(messageCallback?: (msg: { message: string, type: string }) => void) {
+	async load(messageCallback?: (msg: { message: string; type: string }) => void) {
 		if (this.loaded && this.ffmpeg) return;
 
 		if (!this.ffmpeg) {
@@ -35,7 +35,10 @@ export class FFmpegService {
 		this.loaded = true;
 	}
 
-	async extractAudio(file: File, outputFormat: 'mp3' | 'aac' | 'wav' = 'mp3'): Promise<{ filename: string, data: Uint8Array }[]> {
+	async extractAudio(
+		file: File,
+		outputFormat: 'mp3' | 'aac' | 'wav' = 'mp3'
+	): Promise<{ filename: string; data: Uint8Array }[]> {
 		if (!this.loaded || !this.ffmpeg) {
 			throw new Error('FFmpeg not loaded');
 		}
@@ -66,19 +69,19 @@ export class FFmpegService {
 			await this.ffmpeg.deleteDir(inputDir);
 			throw e;
 		}
-		
+
 		if (trackCount === 0) {
 			await this.ffmpeg.unmount(inputDir);
 			await this.ffmpeg.deleteDir(inputDir);
 			throw new Error('No audio tracks found');
 		}
 
-		const results: { filename: string, data: Uint8Array }[] = [];
+		const results: { filename: string; data: Uint8Array }[] = [];
 		const args = ['-i', inputPath];
 		const outputNames: string[] = [];
-		
+
 		const codecArgsRaw = this.getCodecArgs(outputFormat);
-		const codecArgs = codecArgsRaw.filter(a => a !== '-vn');
+		const codecArgs = codecArgsRaw.filter((a) => a !== '-vn');
 
 		for (let i = 0; i < trackCount; i++) {
 			const outName = `track_${i + 1}.${outputFormat}`;
@@ -121,11 +124,11 @@ export class FFmpegService {
 
 	private async getAudioStreamCount(inputName: string): Promise<number> {
 		if (!this.ffmpeg) return 0;
-		
+
 		const logs: string[] = [];
 		const logHandler = ({ message }: { message: string }) => logs.push(message);
 		this.ffmpeg.on('log', logHandler);
-		
+
 		// Run ffmpeg -i inputName to get info
 		// This usually creates an error (exit code 1) because no output file is provided,
 		// but we only care about the logs.
@@ -134,9 +137,9 @@ export class FFmpegService {
 		} catch (e) {
 			// Output expected to verify info
 		}
-		
+
 		this.ffmpeg.off('log', logHandler);
-		
+
 		const output = logs.join('\n');
 		// Look for "Stream #0:x... Audio:"
 		// Example: Stream #0:1(und): Audio: aac ...
@@ -159,7 +162,9 @@ export class FFmpegService {
 	}
 
 	private getFileExtension(filename: string): string {
-		return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2) ? "." + filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2) : "";
+		return filename.slice(((filename.lastIndexOf('.') - 1) >>> 0) + 2)
+			? '.' + filename.slice(((filename.lastIndexOf('.') - 1) >>> 0) + 2)
+			: '';
 	}
 }
 

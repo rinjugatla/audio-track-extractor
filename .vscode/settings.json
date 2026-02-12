@@ -3,8 +3,8 @@
 		"*.css": "tailwindcss"
 	},
 	"files.exclude": {
-        "**/.git": true,
+		"**/.git": true,
 		".svelte-kit": true,
 		"node_modules": true
-    },
+	}
 }

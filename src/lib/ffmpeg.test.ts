@@ -49,7 +49,7 @@ describe('FFmpegService', () => {
 	// without jsdom/happy-dom properly configured or a polyfill.
 	// But vitest with environment: 'node' (default for server project) won't have File.
 	// The client project in vite.config.ts has environment: 'happy-dom' or similar implicitly via 'browser' mode?
-	// The config shows 'browser' provider: 'playwright'. This runs real browser tests for unit tests? 
+	// The config shows 'browser' provider: 'playwright'. This runs real browser tests for unit tests?
 	// Or maybe 'environment' is not set for client, so it defaults to node?
 	// Let's check vite.config.ts again.
 });

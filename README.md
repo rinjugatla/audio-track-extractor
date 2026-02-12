@@ -22,10 +22,10 @@ Audio Track Extractorは、SvelteKitを使用して構築されたウェブア�
 
 1. リポジトリをクローンします。
 
-    ```sh
-    git clone <リポジトリURL>
-    cd audio-track-extractor
-    ```
+   ```sh
+   git clone <リポジトリURL>
+   cd audio-track-extractor
+   ```
 
 2. 依存関係をインストールします。
 
