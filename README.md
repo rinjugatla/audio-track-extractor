@@ -8,7 +8,7 @@ Audio Track Extractorは、SvelteKitを使用して構築されたウェブア�
 - **主要機能**:
   - 音声ファイルのアップロード
   - 音声トラックの抽出とプレビュー
-  - Cloudflare Workersへのデプロイ対応
+  - GitHub Pages へのデプロイ対応
 - **テスト**: Vitest（ユニットテスト）、Playwright（E2Eテスト）
 
 ## セットアップ方法
