@@ -40,28 +40,43 @@ export class FFmpegService {
 			throw new Error('FFmpeg not loaded');
 		}
 
-		const inputName = 'input' + this.getFileExtension(file.name);
-		await this.ffmpeg.writeFile(inputName, await fetchFile(file));
+		// Mount the file effectively avoiding memory issues for large files
+		const inputDir = '/input_mnt';
+		const fileName = file.name;
+		const inputPath = `${inputDir}/${fileName}`;
 
-		const trackCount = await this.getAudioStreamCount(inputName);
+		try {
+			// Clean up previous mount if somehow stuck (though we clean up at end)
+			// or create the dir
+			await this.ffmpeg.createDir(inputDir);
+		} catch (e) {
+			// Directory likely exists
+		}
+
+		// WORKERFS allows mounting the File object directly without loading it all into RAM
+		await this.ffmpeg.mount('WORKERFS', { files: [file] }, inputDir);
+
+		let trackCount: number;
+		try {
+			trackCount = await this.getAudioStreamCount(inputPath);
+		} catch (e) {
+			// If probing fails, unmount and rethrow
+			await this.ffmpeg.unmount(inputDir);
+			await this.ffmpeg.deleteDir(inputDir);
+			throw e;
+		}
 		
 		if (trackCount === 0) {
-			// Fallback: try default extraction if no audio streams detected explicitly (rare)
-			// or simply return empty. But let's try at least one export blindly if logic fails,
-			// or just return empty. Given the user request, let's respect detection.
-			await this.ffmpeg.deleteFile(inputName);
+			await this.ffmpeg.unmount(inputDir);
+			await this.ffmpeg.deleteDir(inputDir);
 			throw new Error('No audio tracks found');
 		}
 
 		const results: { filename: string, data: Uint8Array }[] = [];
-		const args = ['-i', inputName];
+		const args = ['-i', inputPath];
 		const outputNames: string[] = [];
 		
-		// -vn is not needed per output if we map only audio, but safe to keep logic simple
-		// The original getCodecArgs included '-vn'. Let's clean it up for multiple outputs.
 		const codecArgsRaw = this.getCodecArgs(outputFormat);
-		// Remove -vn because map 0:a:x implies audio only anyway, and -vn is global-ish or per input? 
-		// Actually -vn usually applies to the output stream. 
 		const codecArgs = codecArgsRaw.filter(a => a !== '-vn');
 
 		for (let i = 0; i < trackCount; i++) {
@@ -75,22 +90,30 @@ export class FFmpegService {
 			args.push(outName);
 		}
 
-		// Run the command
-		await this.ffmpeg.exec(args);
+		try {
+			// Run the command
+			await this.ffmpeg.exec(args);
 
-		// Read all output files
-		for (const outName of outputNames) {
+			// Read all output files
+			for (const outName of outputNames) {
+				try {
+					const data = await this.ffmpeg.readFile(outName);
+					results.push({ filename: outName, data: data as Uint8Array });
+					await this.ffmpeg.deleteFile(outName);
+				} catch (e) {
+					console.warn(`Could not read output file ${outName}`, e);
+				}
+			}
+		} finally {
+			// Cleanup input mount
+			// Even if exec fails, we must unmount
 			try {
-				const data = await this.ffmpeg.readFile(outName);
-				results.push({ filename: outName, data: data as Uint8Array });
-				await this.ffmpeg.deleteFile(outName);
-			} catch (e) {
-				console.warn(`Could not read output file ${outName}`, e);
+				await this.ffmpeg.unmount(inputDir);
+				await this.ffmpeg.deleteDir(inputDir);
+			} catch (cleanupErr) {
+				console.error('Cleanup error:', cleanupErr);
 			}
 		}
-		
-		// Cleanup input
-		await this.ffmpeg.deleteFile(inputName);
 
 		return results;
 	}
