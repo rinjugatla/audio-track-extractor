@@ -12,27 +12,28 @@
 	}
 
 	let { tracks = $bindable(), isProcessing, onToggleAll }: Props = $props();
+	import * as m from '../../paraglide/messages';
 </script>
 
 {#if tracks.length > 0}
-	<div class="divider text-sm text-base-content/50">Audio Tracks Found</div>
+	<div class="divider text-sm text-base-content/50">{m.tracks_found_title()}</div>
 	<div class="flex w-full flex-col gap-2">
 		<div class="flex items-center justify-between">
-			<span class="text-sm font-bold">{tracks.length} tracks detected</span>
+			<span class="text-sm font-bold">{m.tracks_detected_count({ count: tracks.length })}</span>
 			<div class="flex gap-2">
 				<button
 					class="btn btn-outline btn-xs"
 					onclick={() => onToggleAll(true)}
 					disabled={isProcessing}
 				>
-					Select All
+					{m.select_all_button()}
 				</button>
 				<button
 					class="btn btn-outline btn-xs"
 					onclick={() => onToggleAll(false)}
 					disabled={isProcessing}
 				>
-					Deselect All
+					{m.deselect_all_button()}
 				</button>
 			</div>
 		</div>
@@ -51,7 +52,7 @@
 						disabled={isProcessing}
 					/>
 					<div class="flex flex-col text-left text-xs">
-						<span class="font-bold">Track {track.index + 1} ({track.language})</span>
+						<span class="font-bold">{m.track_item_label({ index: track.index + 1, language: track.language || 'unknown' })}</span>
 						<span class="text-base-content/70">{track.description}</span>
 					</div>
 				</label>

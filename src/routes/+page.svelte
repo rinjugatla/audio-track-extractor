@@ -6,6 +6,7 @@
 	import Controls from '$lib/components/Controls.svelte';
 	import LogViewer from '$lib/components/LogViewer.svelte';
 	import ResultList from '$lib/components/ResultList.svelte';
+	import * as m from '../paraglide/messages';
 
 	const viewModel = new AudioExtractor();
 
@@ -17,7 +18,7 @@
 <div class="container mx-auto max-w-2xl p-4">
 	<div class="card bg-base-100 shadow-xl">
 		<figure class="flex flex-col items-center px-10 pt-10">
-			<h1 class="text-4xl font-bold text-primary">Audio Track Extractor</h1>
+			<h1 class="text-4xl font-bold text-primary">{m.app_title()}</h1>
 			<p class="mt-2 flex items-center gap-2 text-sm text-base-content/70">
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -31,7 +32,7 @@
 						clip-rule="evenodd"
 					/>
 				</svg>
-				All processing is done locally. No data is sent to any server.
+				{m.local_processing_notice()}
 			</p>
 		</figure>
 		<div class="card-body items-center text-center">

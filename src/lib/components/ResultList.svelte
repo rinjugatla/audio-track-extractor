@@ -16,13 +16,14 @@
 		const nameWithoutExt = selectedFile.name.replace(/\.[^/.]+$/, '');
 		return nameWithoutExt + '-track';
 	});
+	import * as m from '../../paraglide/messages';
 </script>
 
 {#if extractedTracks.length > 0}
 	<div class="divider"></div>
 	<div class="flex w-full flex-col items-center gap-4">
 		<h3 class="text-xl font-bold text-success">
-			Extraction Successful! ({extractedTracks.length} tracks)
+			{m.extraction_success_title({ count: extractedTracks.length })}
 		</h3>
 
 		{#each extractedTracks as track (track.name)}
@@ -36,7 +37,7 @@
 						download={`${filenameBase}${track.number}${extension}`}
 						class="btn btn-outline btn-sm btn-secondary"
 					>
-						Download {`${filenameBase}${track.number}${extension}`}
+						{m.download_button({ filename: `${filenameBase}${track.number}${extension}` })}
 					</a>
 				</div>
 			</div>

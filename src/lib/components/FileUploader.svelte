@@ -34,11 +34,12 @@
 		const i = Math.floor(Math.log(bytes) / Math.log(k));
 		return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 	}
+	import * as m from '../../paraglide/messages';
 </script>
 
 <div class="flex flex-col gap-2">
 	<label class="label" for="file-upload">
-		<span class="label-text">Select Video File</span>
+		<span class="label-text">{m.file_upload_label()}</span>
 	</label>
 	<input
 		id="file-upload"

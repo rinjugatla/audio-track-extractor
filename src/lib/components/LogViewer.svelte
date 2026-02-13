@@ -29,9 +29,12 @@
 			container.scrollTop = container.scrollHeight;
 		}
 	});
+
+	import * as m from '../../paraglide/messages';
 </script>
 
 {#if logs.length > 0}
+	<div class="divider text-sm text-base-content/50">{m.logs_title()}</div>
 	<div
 		bind:this={container}
 		onscroll={onScroll}
