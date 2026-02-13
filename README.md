@@ -55,13 +55,7 @@ Audio Track Extractorは、SvelteKitを使用して構築されたウェブア�
    pnpm run build
    ```
 
-2. Cloudflare Workersでプレビューします。
-
-   ```sh
-   pnpm run preview
-   ```
-
-3. デプロイには、`wrangler` を使用します。環境変数を設定した後、以下のコマンドを実行してください。
+2. GitHub Pagesにデプロイします。
 
    ```sh
    pnpm run deploy
@@ -97,9 +91,8 @@ Audio Track Extractorは、SvelteKitを使用して構築されたウェブア�
    - ユニットテスト（Vitest）とE2Eテスト（Playwright）を設定。
    - 主要な機能のテストケースを作成。
 
-4. **Cloudflare Workersへのデプロイ準備**: [x]
-   - `wrangler` を使用してデプロイ設定を確認。
-   - 必要な環境変数を設定（ヘッダー設定完了）。
+4. **GitHub Pagesへのデプロイ準備**: [x]
+   - デプロイ設定を確認。
 
 5. **ドキュメントの整備**: [ ]
    - READMEに使用方法と開発手順を追記。
