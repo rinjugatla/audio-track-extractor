@@ -40,7 +40,7 @@
 		</svg>
 	</div>
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-	<ul tabindex="0" class="dropdown-content menu z-[1] w-52 rounded-box bg-base-100 p-2 shadow">
+	<ul tabindex="0" class="dropdown-content menu z-1 w-52 rounded-box bg-base-100 p-2 shadow">
 		{#each availableLocales as loc}
 			<li>
 				<button class={currentLang === loc ? 'active' : ''} onclick={() => switchLanguage(loc)}>
