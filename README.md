@@ -33,7 +33,13 @@ Audio Track Extractorは、SvelteKitを使用して構築されたウェブア�
    pnpm install
    ```
 
-3. 開発サーバーを起動します。
+3. 多言語対応ファイルを生成します。
+
+   ```sh
+   pnpx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/paraglide
+   ```
+
+4. 開発サーバーを起動します。
 
    ```sh
    pnpm run dev
