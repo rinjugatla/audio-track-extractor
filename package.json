@@ -14,7 +14,9 @@
 		"format": "prettier --write .",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
-		"test:e2e": "playwright test"
+		"test:e2e": "playwright test",
+		"inlang": "pnpx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/paraglide",
+		"inlang:watch": "pnpx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/paraglide --watch"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.2",
