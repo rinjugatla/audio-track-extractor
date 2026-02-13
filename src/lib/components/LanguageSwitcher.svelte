@@ -18,12 +18,12 @@
 		goto(url.toString(), { keepFocus: true });
 	}
 
-    // Explicitly define locales as string array to avoid type issues with paraglide runtime
-    const availableLocales = locales as unknown as string[];
+	// Explicitly define locales as string array to avoid type issues with paraglide runtime
+	const availableLocales = locales as unknown as string[];
 </script>
 
 <div class="dropdown dropdown-end">
-	<div tabindex="0" role="button" class="btn btn-ghost btn-circle" aria-label="Language">
+	<div tabindex="0" role="button" class="btn btn-circle btn-ghost" aria-label="Language">
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
 			class="h-5 w-5"
@@ -40,16 +40,10 @@
 		</svg>
 	</div>
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-	<ul
-		tabindex="0"
-		class="menu dropdown-content z-[1] w-52 rounded-box bg-base-100 p-2 shadow"
-	>
+	<ul tabindex="0" class="dropdown-content menu z-[1] w-52 rounded-box bg-base-100 p-2 shadow">
 		{#each availableLocales as loc}
 			<li>
-				<button
-					class={currentLang === loc ? 'active' : ''}
-					onclick={() => switchLanguage(loc)}
-				>
+				<button class={currentLang === loc ? 'active' : ''} onclick={() => switchLanguage(loc)}>
 					{labels[loc] || loc}
 				</button>
 			</li>

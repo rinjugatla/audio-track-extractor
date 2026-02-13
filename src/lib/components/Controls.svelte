@@ -44,7 +44,9 @@
 	{#if isProcessing}
 		<div class="flex w-full flex-col gap-1">
 			<progress class="progress w-full progress-primary" value={progress} max="100"></progress>
-			<div class="text-right text-xs text-base-content/70">{m.processing_progress({ progress })}</div>
+			<div class="text-right text-xs text-base-content/70">
+				{m.processing_progress({ progress })}
+			</div>
 		</div>
 	{/if}
 

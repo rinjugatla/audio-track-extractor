@@ -52,7 +52,12 @@
 						disabled={isProcessing}
 					/>
 					<div class="flex flex-col text-left text-xs">
-						<span class="font-bold">{m.track_item_label({ index: track.index + 1, language: track.language || 'unknown' })}</span>
+						<span class="font-bold"
+							>{m.track_item_label({
+								index: track.index + 1,
+								language: track.language || 'unknown'
+							})}</span
+						>
 						<span class="text-base-content/70">{track.description}</span>
 					</div>
 				</label>

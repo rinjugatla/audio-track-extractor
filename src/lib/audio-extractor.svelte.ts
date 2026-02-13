@@ -147,8 +147,8 @@ export class AudioExtractor {
 				const originalTrack = this.tracks.find((t) => t.streamIndex === track.streamIndex);
 				let label = track.filename;
 				if (originalTrack) {
-					label = m.track_item_label({ 
-						index: originalTrack.index + 1, 
+					label = m.track_item_label({
+						index: originalTrack.index + 1,
 						language: originalTrack.language || 'unknown'
 					});
 				}

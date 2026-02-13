@@ -22,7 +22,7 @@ const config = {
 			base: process.env.BASE_PATH || ''
 		},
 		alias: {
-			$paraglide: "./src/paraglide",
+			$paraglide: './src/paraglide'
 		}
 	}
 };
