@@ -20,11 +20,13 @@
 		canExtract,
 		onExtract
 	}: Props = $props();
+
+	import * as m from '$paraglide/messages';
 </script>
 
 <div class="flex flex-col gap-2">
 	<label class="label" for="output-format">
-		<span class="label-text">Output Format</span>
+		<span class="label-text">{m.output_format_label()}</span>
 	</label>
 	<select
 		id="output-format"
@@ -42,7 +44,9 @@
 	{#if isProcessing}
 		<div class="flex w-full flex-col gap-1">
 			<progress class="progress w-full progress-primary" value={progress} max="100"></progress>
-			<div class="text-right text-xs text-base-content/70">{progress}%</div>
+			<div class="text-right text-xs text-base-content/70">
+				{m.processing_progress({ progress })}
+			</div>
 		</div>
 	{/if}
 
@@ -53,9 +57,9 @@
 	>
 		{#if isProcessing}
 			<span class="loading loading-spinner"></span>
-			Processing...
+			{m.processing_label()}
 		{:else}
-			Extract Selected Audio
+			{m.extract_button_label()}
 		{/if}
 	</button>
 </div>

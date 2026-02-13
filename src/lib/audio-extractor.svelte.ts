@@ -1,4 +1,5 @@
 import { ffmpegService, type AudioTrackInfo } from './ffmpeg';
+import * as m from '$paraglide/messages';
 
 /** UI側で選択状態を管理するための拡張音声トラック情報 */
 export interface SelectableAudioTrack extends AudioTrackInfo {
@@ -30,7 +31,7 @@ export class AudioExtractor {
 	/** ファイル分析（プローブ）中かどうか */
 	isProbing = $state(false);
 	/** 現在のステータスメッセージ */
-	message = $state('Loading FFmpeg...');
+	message = $state(m.loading_ffmpeg());
 	/** FFmpegからのログメッセージ履歴 */
 	logs = $state<string[]>([]);
 	/** ユーザーが選択したファイル */
@@ -65,10 +66,10 @@ export class AudioExtractor {
 				// ここでは全てのログを追加する形にして、表示側で制御、あるいは無限に増えないように管理する。
 				this.logs = [...this.logs, message];
 			});
-			this.message = 'Ready';
+			this.message = m.ready_status();
 			this.isLoaded = true;
 		} catch (e) {
-			this.error = 'Failed to load FFmpeg. Please check your connection or browser compatibility.';
+			this.error = m.error_load_ffmpeg();
 			console.error(e);
 		}
 	}
@@ -98,7 +99,7 @@ export class AudioExtractor {
 			}
 		} catch (e: any) {
 			console.error(e);
-			this.error = 'Failed to analyze file: ' + e.message;
+			this.error = m.error_analyze_file({ error: e.message });
 		} finally {
 			this.isProbing = false;
 		}
@@ -119,7 +120,7 @@ export class AudioExtractor {
 		const selectedIndices = this.tracks.filter((t) => t.selected).map((t) => t.streamIndex);
 
 		if (selectedIndices.length === 0) {
-			this.error = 'Please select at least one track to extract.';
+			this.error = m.error_select_track();
 			return;
 		}
 		this.isProcessing = true;
@@ -144,17 +145,24 @@ export class AudioExtractor {
 					type: `audio/${this.outputFormat}`
 				});
 				const originalTrack = this.tracks.find((t) => t.streamIndex === track.streamIndex);
+				let label = track.filename;
+				if (originalTrack) {
+					label = m.track_item_label({
+						index: originalTrack.index + 1,
+						language: originalTrack.language || 'unknown'
+					});
+				}
 				return {
 					name: track.filename,
 					number: track.streamIndex,
 					url: URL.createObjectURL(blob),
-					label: originalTrack ? `Track ${originalTrack.index + 1}` : `Track ${track.filename}`
+					label: label
 				} as ExtractedTrack;
 			});
 
-			this.message = `Extraction complete! Extracted ${this.extractedTracks.length} tracks.`;
+			this.message = m.extraction_complete({ count: this.extractedTracks.length });
 		} catch (e: any) {
-			this.error = e.message || 'An error occurred during extraction. Check logs for details.';
+			this.error = e.message || m.error_extraction_failed();
 			console.error(e);
 		} finally {
 			this.isProcessing = false;

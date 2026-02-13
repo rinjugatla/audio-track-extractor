@@ -6,5 +6,10 @@
 		"**/.git": true,
 		".svelte-kit": true,
 		"node_modules": true
+	},
+	"search.exclude": {
+		"**/.git": true,
+		".svelte-kit": true,
+		"**/node_modules": true
 	}
 }
