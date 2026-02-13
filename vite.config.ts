@@ -2,9 +2,13 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { paraglide } from "@inlang/paraglide-js-adapter-vite"
 
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit()],
+	plugins: [tailwindcss(), sveltekit(), paraglide({
+		project: "./project.inlang",
+		outdir: "./src/paraglide",
+	})],
 	server: {
 		headers: {
 			'Cross-Origin-Opener-Policy': 'same-origin',
