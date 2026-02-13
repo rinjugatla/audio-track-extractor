@@ -48,6 +48,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Generate inlang resources
+        run: pnpm run inlang
+
       - name: Build
         run: pnpm run build
         env:
