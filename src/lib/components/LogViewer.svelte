@@ -30,7 +30,7 @@
 		}
 	});
 
-	import * as m from '../../paraglide/messages';
+	import * as m from '$paraglide/messages';
 </script>
 
 {#if logs.length > 0}

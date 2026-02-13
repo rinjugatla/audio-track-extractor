@@ -1,6 +1,6 @@
 <script lang="ts">
   export let repo: string = 'https://github.com/rinjugatla/audio-track-extractor';
-  import * as m from '../../paraglide/messages';
+  import * as m from '$paraglide/messages';
 </script>
 
 <footer class="w-full bg-base-100">

@@ -3,7 +3,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import Footer from '$lib/components/Footer.svelte';
 	import { page } from '$app/stores';
-	import { setLocale, locales, getLocale } from '../paraglide/runtime';
+	import { setLocale, locales, getLocale } from '$paraglide/runtime';
 
 	let { children } = $props();
 

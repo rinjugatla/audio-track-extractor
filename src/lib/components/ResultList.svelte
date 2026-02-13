@@ -16,7 +16,7 @@
 		const nameWithoutExt = selectedFile.name.replace(/\.[^/.]+$/, '');
 		return nameWithoutExt + '-track';
 	});
-	import * as m from '../../paraglide/messages';
+	import * as m from '$paraglide/messages';
 </script>
 
 {#if extractedTracks.length > 0}

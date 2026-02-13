@@ -34,7 +34,7 @@
 		const i = Math.floor(Math.log(bytes) / Math.log(k));
 		return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 	}
-	import * as m from '../../paraglide/messages';
+	import * as m from '$paraglide/messages';
 </script>
 
 <div class="flex flex-col gap-2">

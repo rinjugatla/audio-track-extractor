@@ -6,7 +6,7 @@
 	import Controls from '$lib/components/Controls.svelte';
 	import LogViewer from '$lib/components/LogViewer.svelte';
 	import ResultList from '$lib/components/ResultList.svelte';
-	import * as m from '../paraglide/messages';
+	import * as m from '$paraglide/messages';
 
 	const viewModel = new AudioExtractor();
 

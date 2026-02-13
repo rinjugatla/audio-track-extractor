@@ -12,7 +12,7 @@
 	}
 
 	let { tracks = $bindable(), isProcessing, onToggleAll }: Props = $props();
-	import * as m from '../../paraglide/messages';
+	import * as m from '$paraglide/messages';
 </script>
 
 {#if tracks.length > 0}

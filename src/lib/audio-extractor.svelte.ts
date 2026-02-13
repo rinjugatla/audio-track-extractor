@@ -1,5 +1,5 @@
 import { ffmpegService, type AudioTrackInfo } from './ffmpeg';
-import * as m from '../paraglide/messages';
+import * as m from '$paraglide/messages';
 
 /** UI側で選択状態を管理するための拡張音声トラック情報 */
 export interface SelectableAudioTrack extends AudioTrackInfo {

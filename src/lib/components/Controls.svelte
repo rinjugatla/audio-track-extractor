@@ -21,7 +21,7 @@
 		onExtract
 	}: Props = $props();
 
-	import * as m from '../../paraglide/messages';
+	import * as m from '$paraglide/messages';
 </script>
 
 <div class="flex flex-col gap-2">
