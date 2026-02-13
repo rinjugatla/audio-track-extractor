@@ -2,6 +2,7 @@
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import Footer from '$lib/components/Footer.svelte';
+	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
 	import { page } from '$app/stores';
 	import { setLocale, locales, getLocale } from '$paraglide/runtime';
 
@@ -18,5 +19,10 @@
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
+
+<div class="fixed top-4 right-4 z-50">
+	<LanguageSwitcher />
+</div>
+
 {@render children()}
 <Footer />
